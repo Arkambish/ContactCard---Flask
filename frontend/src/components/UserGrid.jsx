@@ -1,8 +1,29 @@
-import { Grid } from "@chakra-ui/react";
-import { USERS } from "../dummy/dummy";
+import { Grid, Flex, Spinner, Text } from "@chakra-ui/react";
 import UserCard from "./UserCard";
+import { useEffect } from "react";
+import { useState } from "react";
+import { BASE_URL } from "../App";
 
-const UserGrid = () => {
+const UserGrid = ({ users, setUsers }) => {
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        const res = await fetch(BASE_URL + "/friends");
+        const data = await res.json();
+        if (!res.ok) {
+          console.log("error", data.error);
+          throw new Error(data.error);
+        }
+        setUsers(data);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getUsers();
+  }, [setUsers]);
   return (
     <>
       <Grid
@@ -13,17 +34,17 @@ const UserGrid = () => {
         }}
         gap={4}
       >
-        {USERS.map((user) => (
-          <UserCard key={user.id} user={user} setUsers={""} />
+        {users.map((user) => (
+          <UserCard key={user.id} user={user} setUsers={setUsers} />
         ))}
       </Grid>
 
-      {/* {isLoading && (
+      {loading && (
         <Flex justifyContent={"center"}>
           <Spinner size={"xl"} />
         </Flex>
-      )} */}
-      {/* {!isLoading && users.length === 0 && (
+      )}
+      {!loading && users.length === 0 && (
         <Flex justifyContent={"center"}>
           <Text fontSize={"xl"}>
             <Text as={"span"} fontSize={"2xl"} fontWeight={"bold"} mr={2}>
@@ -32,7 +53,7 @@ const UserGrid = () => {
             No friends found.
           </Text>
         </Flex>
-      )} */}
+      )}
     </>
   );
 };
